@@ -4,13 +4,21 @@ import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
 
 export default function App() {
-  const [permission, requestPermission] = useCameraPermissions();
+  const [ permission, requestPermission ] = useCameraPermissions();
   const [ scannedBarcode, setScannedBarcode ] = useState("no barcode scanned");
+  const [ scanned, setScanned ] = useState(false);
 
+  // handlebarcodescanned
+  // result: BarcodeScanned => void {}
+  // vaihda use effectiin useeffect () => void {}
   if(!permission){
-    return <View/>;
+    return (
+      <View>
+        <Text>Waiting on camera permissions...</Text>
+      </View>
+    );
   }
-
+  
   if(!permission.granted){
     return(
       <View style={styles.container}>
@@ -25,6 +33,7 @@ export default function App() {
       <CameraView 
         style={styles.camera} 
         facing='back'
+        active={!scanned}
         barcodeScannerSettings={
           {
             barcodeTypes: ['ean13', 'code128', 'code39', 'code93', 'ean8', 'codabar']
@@ -37,7 +46,10 @@ export default function App() {
         }
       />
       <View style={styles.resultContainer}>
-        <Text style={styles.text}>{scannedBarcode}</Text>
+        <Text style={styles.barcodeText}>Barcode: {scannedBarcode}</Text>
+        <TouchableOpacity style={styles.scanBtn}>
+          <Text style={styles.text}>Scan</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -60,7 +72,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 64,
     padding: 20,
-    flexDirection: 'row',
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     width: '100%',
     paddingHorizontal: 64,
@@ -74,5 +85,16 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: 'white'
+  },
+  barcodeText: {
+    fontSize: 18,
+    color: 'white'
+  },
+  scanBtn: {
+    backgroundColor: '#1c9630',
+    padding: 10,
+    alignItems: 'center',
+    width: 100,
+    borderRadius: 12
   }
 });
