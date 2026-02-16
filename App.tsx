@@ -1,17 +1,23 @@
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button, TouchableOpacity } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import React from 'react';
+
+type ScannedBarcode = {
+  type: string;
+  data: string;
+};
 
 export default function App() {
   const [ permission, requestPermission ] = useCameraPermissions();
   const [ scannedBarcode, setScannedBarcode ] = useState("no barcode scanned");
-  const [ scanned, setScanned ] = useState(false);
+  const [ scanning, setScanning ] = useState(false);
 
-  // handlebarcodescanned
-  // result: BarcodeScanned => void {}
-  // vaihda use effectiin useeffect () => void {}
+  useEffect(() => {
+    if(!permission) return;
+    if (!permission.granted) requestPermission();
+  }, [permission, requestPermission]);
+
   if(!permission){
     return (
       <View>
@@ -29,26 +35,35 @@ export default function App() {
     );
   }
 
+  const handleBarcodeScanned = (result: ScannedBarcode) => {
+    setScannedBarcode(result.data);
+    setScanning(false);
+  }
+
   return (
     <View style={styles.container}>
       <CameraView 
         style={styles.camera} 
         facing='back'
-        active={!scanned}
+        active={!scanning}
         barcodeScannerSettings={
           {
             barcodeTypes: ['ean13', 'code128', 'code39', 'code93', 'ean8', 'codabar']
           }
         }
-        onBarcodeScanned={
-          ({ data }) => {
-            setScannedBarcode(data);
-          }
-        }
+        onBarcodeScanned={handleBarcodeScanned}
       />
       <View style={styles.resultContainer}>
         <Text style={styles.barcodeText}>Barcode: {scannedBarcode}</Text>
-        <TouchableOpacity style={styles.scanBtn}>
+        <TouchableOpacity 
+          style={styles.scanBtn}
+          onPress={() => {
+            if (scannedBarcode){
+              setScannedBarcode("");
+            }
+            setScanning(true);
+          }}
+        >
           <Text style={styles.text}>Scan</Text>
         </TouchableOpacity>
       </View>
